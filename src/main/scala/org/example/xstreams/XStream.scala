@@ -3,9 +3,9 @@ package org.example.xstreams
 import java.util.Comparator
 
 trait XStreamOps {
-  def empty[T]: XStream[T]
+  def empty[T]: XFiniteStream[T]
 
-  def once[T](elem: T): XStream[T]
+  def once[T](elem: T): XFiniteStream[T]
 
   def fixed[T](elem: T): XStream[T] =
     iterate(elem, identity)
@@ -104,4 +104,7 @@ trait XFiniteStream[T] extends XStream[T] {
 
   def min(comparator: Comparator[T]): Option[T]
 
+  def reversed: XFiniteStream[T]
+
+  def concat(other: XFiniteStream[T]): XFiniteStream[T]
 }

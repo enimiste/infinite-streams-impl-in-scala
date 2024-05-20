@@ -130,5 +130,12 @@ object App {
     val names = finite(Seq("NOUNI", "El", "Bachir", "SAISSI", "HASSANI", "Tamou"))
     println(names.foldLeft("", (acc, s2) => acc + " " + s2))
     println(names.foldRight("", (acc, s2) => acc + " " + s2))
+
+    println("-" * 20)
+    stream
+      .map(n => n + " ")
+      .take(10)
+      .reversed
+      .forEach(print)
   }
 }

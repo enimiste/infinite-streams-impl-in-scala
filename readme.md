@@ -7,10 +7,12 @@ Some operations throw `StackOverflowError` exceptions with big streams (ex: size
 ```scala
 package org.example.xstreams
 
-trait XStreamOps {
-  def empty[T]: XStream[T]
+import java.util.Comparator
 
-  def once[T](elem: T): XStream[T]
+trait XStreamOps {
+  def empty[T]: XFiniteStream[T]
+
+  def once[T](elem: T): XFiniteStream[T]
 
   def fixed[T](elem: T): XStream[T] =
     iterate(elem, identity)
@@ -33,6 +35,9 @@ trait XStreamOps {
       val a = A(elems, 1)
       iterate(elems.head, x => a.next)
     }
+
+  def finite[T](items: Seq[T]): XFiniteStream[T] =
+    circular(items).take(items.size)
 }
 
 //Defines only intermediate operations
@@ -68,15 +73,17 @@ trait XStream[T] {
 
 //Defines terminal operations
 trait XFiniteStream[T] extends XStream[T] {
-  def reduce[B](initial: B, combinator: (B, T) => B): B
+  def foldLeft[B](initial: B, combinator: (B, T) => B): B
+
+  def foldRight[B](initial: B, combinator: (B, T) => B): B
 
   def collect[B[_]](bag: B[T], collector: (B[T], T) => B[T]): B[T] =
-    reduce(bag, collector)
+    foldLeft(bag, collector)
 
   def toList: List[T] = collect(List[T](), (list, item) => list ++ List(item))
 
   def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B] =
-    reduce(Map[K, B](), (groups, item) => {
+    foldLeft(Map[K, B](), (groups, item) => {
       val k: K = keyGenerator(item)
       val v: B = groups.getOrElse(k, initial)
       val nv: B = combinator(v, item)
@@ -98,6 +105,15 @@ trait XFiniteStream[T] extends XStream[T] {
     })
     countBag(0)
   }
+
+  def max(comparator: Comparator[T]): Option[T] =
+    min(comparator.reversed)
+
+  def min(comparator: Comparator[T]): Option[T]
+
+  def reversed: XFiniteStream[T]
+
+  def concat(other: XFiniteStream[T]): XFiniteStream[T]
 }
 ```
 

@@ -3,9 +3,9 @@ package org.example.xstreams
 import java.util.Comparator
 
 object XStreams extends XStreamOps {
-  override def empty[T]: XStream[T] = new XEmptyStream[T]
+  override def empty[T]: XFiniteStream[T] = new XEmptyStream[T]
 
-  override def once[T](elem: T): XStream[T] =
+  override def once[T](elem: T): XFiniteStream[T] =
     new XNoEmptyStream[T](elem, new XEmptyStream[T])
 
   override def iterate[T](elem: T, op: T => T): XStream[T] =
@@ -36,6 +36,9 @@ object XStreams extends XStreamOps {
     override def map[B](mapping: T => B): XStream[B] = new XNoEmptyStream(mapping(elem), tail.map(mapping))
 
     override def concat(other: XStream[T]): XStream[T] =
+      new XNoEmptyStream[T](elem, tail.concat(other))
+
+    override def concat(other: XFiniteStream[T]): XFiniteStream[T] =
       new XNoEmptyStream[T](elem, tail.concat(other))
 
     override def flatMap[B](mapping: T => XStream[B]): XStream[B] = {
@@ -99,14 +102,24 @@ object XStreams extends XStreamOps {
 
     override def min(comparator: Comparator[T]): Option[T] =
       Some(foldLeft(head, (min, item) => if comparator.compare(min, item) > 0 then item else min))
+
+    override def reversed: XFiniteStream[T] =
+      tail match {
+        case x: XFiniteStream[T] => {
+          val a = x.reversed
+          val b = once(elem)
+          a concat b
+        }
+        case _ => throw RuntimeException("Not supported operation")
+      }
   }
 
   //********************** EMPTY
   private class XEmptyStream[T] extends XFiniteStream[T] {
 
-    def tail: XStream[T] = new XEmptyStream
+    def tail: XStream[T] = this
 
-    override def take(nbr: Int): XFiniteStream[T] = new XEmptyStream
+    override def take(nbr: Int): XFiniteStream[T] = this
 
     override def forEach(consumer: T => Unit): Unit = ()
 
@@ -118,11 +131,13 @@ object XStreams extends XStreamOps {
 
     override def concat(other: XStream[T]): XStream[T] = other
 
-    override def skip(nbr: Int): XStream[T] = new XEmptyStream
+    override def concat(other: XFiniteStream[T]): XFiniteStream[T] = other
 
-    override def takeWhile(predicate: T => Boolean): XStream[T] = new XEmptyStream
+    override def skip(nbr: Int): XStream[T] = this
 
-    override def skipWhile(predicate: T => Boolean): XStream[T] = new XEmptyStream
+    override def takeWhile(predicate: T => Boolean): XStream[T] = this
+
+    override def skipWhile(predicate: T => Boolean): XStream[T] = this
 
     override def foldLeft[B](initial: B, combinator: (B, T) => B): B = initial
 
@@ -135,5 +150,7 @@ object XStreams extends XStreamOps {
     override def window(windowSize: Int): XStream[XFiniteStream[T]] = new XEmptyStream
 
     override def min(comparator: Comparator[T]): Option[T] = None
+
+    override def reversed: XFiniteStream[T] = this
   }
 }
