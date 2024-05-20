@@ -89,7 +89,7 @@ trait XFiniteStream[T] extends XStream[T] {
       val k: K = keyGenerator(item)
       val v: B = groups.getOrElse(k, initial)
       val nv: B = combinator(v, item)
-      groups.+((k, nv))
+      groups.put(k, nv)
     }
 
     groups.toMap
