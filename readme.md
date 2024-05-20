@@ -17,6 +17,9 @@ trait XStreamOps {
 
   def iterate[T](elem: T, op: T => T): XStream[T]
 
+  def generate[T](supplier: () => T): XStream[T] =
+    iterate(supplier(), x => supplier())
+
   def circular[T](elems: Seq[T]): XStream[T] =
     if (elems.isEmpty) empty
     else {

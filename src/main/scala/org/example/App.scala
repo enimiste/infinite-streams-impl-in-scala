@@ -1,5 +1,7 @@
 package org.example
 
+import scala.util.Random
+
 object App {
   def main(args: Array[String]): Unit = {
     import org.example.xstreams.*
@@ -110,6 +112,13 @@ object App {
       .peek(item => println("Peek _ : " + item))
       .take(10)
       .forEach(println)
+    println("-" * 20)
+    val randomStream = generate(() => Random().nextInt(10_000_000))
+    val rndSum = randomStream
+      .peek(println)
+      .take(100)
+      .reduce(0, Math.addExact)
+    println("Random Sum : " + rndSum)
     println("-" * 20)
   }
 }

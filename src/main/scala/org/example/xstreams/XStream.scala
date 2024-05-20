@@ -10,6 +10,9 @@ trait XStreamOps {
 
   def iterate[T](elem: T, op: T => T): XStream[T]
 
+  def generate[T](supplier: () => T): XStream[T] =
+    iterate(supplier(), x => supplier())
+
   def circular[T](elems: Seq[T]): XStream[T] =
     if (elems.isEmpty) empty
     else {
@@ -48,7 +51,7 @@ trait XStream[T] {
 
   def window(windowSize: Int): XStream[XFiniteStream[T]]
 
-  def peek(consumer: T => Unit): XStream[T] = 
+  def peek(consumer: T => Unit): XStream[T] =
     map(item => {
       consumer(item)
       item
