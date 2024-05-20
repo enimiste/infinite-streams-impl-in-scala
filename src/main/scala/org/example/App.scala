@@ -127,15 +127,16 @@ object App {
     println("-" * 20)
 
     println("-" * 20)
-    val names = finite(Seq("NOUNI", "El", "Bachir", "SAISSI", "HASSANI", "Tamou"))
+    val names = finite(Seq("A", "B", "C", "D", "E"))
     println(names.foldLeft("", (acc, s2) => acc + " " + s2))
     println(names.foldRight("", (acc, s2) => acc + " " + s2))
 
     println("-" * 20)
     stream
       .map(n => n + " ")
-      .take(10)
+      .take(1_000)
       .reversed
+      .take(10)
       .forEach(print)
   }
 }

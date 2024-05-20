@@ -1,7 +1,5 @@
 package org.example.xstreams
 
-import java.util.Comparator
-
 object XStreams extends XStreamOps {
   override def empty[T]: XFiniteStream[T] = new XEmptyStream[T]
 
@@ -86,11 +84,6 @@ object XStreams extends XStreamOps {
     override def window(windowSize: Int): XStream[XFiniteStream[T]] =
       new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize - 1).window(windowSize))
 
-    override def reversed: XFiniteStream[T] =
-      tail match {
-        case x: XFiniteStream[T] => x.reversed concat once(elem)
-        case _ => throw RuntimeException("Not supported operation")
-      }
   }
 
   //********************** EMPTY

@@ -129,7 +129,7 @@ trait XFiniteStream[T] extends XStream[T] {
     Some(min)
   }
 
-  def reversed: XFiniteStream[T]
+  def reversed: XFiniteStream[T] = XStreams.finite(toList.reverse)
 
   def concat(other: XFiniteStream[T]): XFiniteStream[T]
 }
