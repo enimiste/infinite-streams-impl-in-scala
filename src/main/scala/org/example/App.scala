@@ -117,7 +117,7 @@ object App {
     val randomStream = generate(() => Random().nextInt(10_000_000))
     val rndSum = randomStream
       .peek(println)
-      .take(100)
+      .take(10)
       .foldLeft(0, Math.addExact)
     println("Random Sum : " + rndSum)
     println("-" * 20)

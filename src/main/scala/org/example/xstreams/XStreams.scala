@@ -105,11 +105,7 @@ object XStreams extends XStreamOps {
 
     override def reversed: XFiniteStream[T] =
       tail match {
-        case x: XFiniteStream[T] => {
-          val a = x.reversed
-          val b = once(elem)
-          a concat b
-        }
+        case x: XFiniteStream[T] => x.reversed concat once(elem)
         case _ => throw RuntimeException("Not supported operation")
       }
   }
