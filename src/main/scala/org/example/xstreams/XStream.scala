@@ -1,5 +1,30 @@
 package org.example.xstreams
 
+trait XStreamOps {
+  def empty[T]: XStream[T]
+
+  def once[T](elem: T): XStream[T]
+
+  def fixed[T](elem: T): XStream[T] =
+    iterate(elem, identity)
+
+  def iterate[T](elem: T, op: T => T): XStream[T]
+
+  def circular[T](elems: Seq[T]): XStream[T] =
+    if (elems.isEmpty) empty
+    else {
+      case class A(elems: Seq[T], var cursor: Int) {
+        def next: T = {
+          val r = elems(cursor)
+          cursor = (cursor + 1) % elems.size
+          r
+        }
+      }
+      val a = A(elems, 1)
+      iterate(elems.head, x => a.next)
+    }
+}
+
 //Defines only intermediate operations
 trait XStream[T] {
 

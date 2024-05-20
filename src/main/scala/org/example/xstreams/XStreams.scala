@@ -1,14 +1,13 @@
 package org.example.xstreams
 
-object XStreams {
-  def once[T](elem: T): XStream[T] =
-    new XNoEmptyStream[T](elem, new XEmptyStream[T])
+object XStreams extends XStreamOps {
+  override def empty[T]: XStream[T] = new XEmptyStream[T]
 
-  def fixed[T](elem: T): XStream[T] =
-    new XNoEmptyStream[T](elem, fixed(elem))
+  override def once[T](elem: T): XStream[T] =
+  new XNoEmptyStream[T](elem, new XEmptyStream[T])
 
-  def iterate[T](elem: T, op: T => T): XStream[T] =
-    new XNoEmptyStream[T](elem, iterate(op(elem), op))
+  override def iterate[T](elem: T, op: T => T): XStream[T] =
+  new XNoEmptyStream[T](elem, iterate(op(elem), op))
 
   private class XNoEmptyStream[T](val elem: T, next: => XStream[T]) extends XFiniteStream[T] {
 
