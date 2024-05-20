@@ -32,14 +32,16 @@ trait XFiniteStream[T] extends XStream[T] {
 
   def toList: List[T] = collect(List[T](), (list, item) => list ++ List(item))
 
-  def groupBy[K](keyGenerator: T => K): Map[K, List[T]] = {
-    reduce(Map[K, List[T]](), (groups, x) => {
-      val k: K = keyGenerator(x)
-      val v: List[T] = groups.getOrElse(k, List[T]())
-      val nv: List[T] = v ++ List(x)
+  def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B] =
+    reduce(Map[K, B](), (groups, item) => {
+      val k: K = keyGenerator(item)
+      val v: B = groups.getOrElse(k, initial)
+      val nv: B = combinator(v, item)
       groups.+((k, nv))
     })
-  }
+
+  def groupBy[K](keyGenerator: T => K): Map[K, List[T]] =
+    groupBy(keyGenerator, List[T](), (list, item) => list ++ List(item))
 
   def forEach(consumer: T => Unit): Unit
 
