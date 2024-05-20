@@ -45,6 +45,8 @@ trait XStream[T] {
   def concat(other: XStream[T]): XStream[T]
 
   def zip[B](other: XStream[B]): XStream[(T, B)]
+
+  def window(windowSize: Int): XStream[XFiniteStream[T]]
 }
 
 

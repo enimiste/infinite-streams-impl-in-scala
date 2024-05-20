@@ -4,10 +4,10 @@ object XStreams extends XStreamOps {
   override def empty[T]: XStream[T] = new XEmptyStream[T]
 
   override def once[T](elem: T): XStream[T] =
-  new XNoEmptyStream[T](elem, new XEmptyStream[T])
+    new XNoEmptyStream[T](elem, new XEmptyStream[T])
 
   override def iterate[T](elem: T, op: T => T): XStream[T] =
-  new XNoEmptyStream[T](elem, iterate(op(elem), op))
+    new XNoEmptyStream[T](elem, iterate(op(elem), op))
 
   private class XNoEmptyStream[T](val elem: T, next: => XStream[T]) extends XFiniteStream[T] {
 
@@ -83,6 +83,9 @@ object XStreams extends XStreamOps {
     override def zip[B](other: XStream[B]): XStream[(T, B)] = other match
       case e: XEmptyStream[B] => new XEmptyStream
       case ne: XNoEmptyStream[B] => new XNoEmptyStream[(T, B)]((elem, ne.elem), tail.zip(ne.tail))
+
+    override def window(windowSize: Int): XStream[XFiniteStream[T]] =
+      new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize-1).window(windowSize))
   }
 
   //********************** EMPTY
@@ -113,5 +116,7 @@ object XStreams extends XStreamOps {
     override def iterator: Iterator[T] = Iterator.empty
 
     override def zip[B](other: XStream[B]): XStream[(T, B)] = new XEmptyStream
+
+    override def window(windowSize: Int): XStream[XFiniteStream[T]] = new XEmptyStream
   }
 }

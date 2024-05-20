@@ -94,5 +94,15 @@ object App {
     val alphabet2 = circular(for i <- 0 to 25 yield (i + 65).toChar)
     alphabet2.take(30).forEach(println)
     println("-" * 20)
+
+    stream
+      .skip(10)
+      .window(10)
+      .take(5)
+      .forEach(s => {
+        s.forEach(n => print(n + ", "))
+        println()
+      })
+    println("-" * 20)
   }
 }
