@@ -80,8 +80,13 @@ object XStreams {
       }
       new IteratorImpl(this)
     }
+
+    override def zip[B](other: XStream[B]): XStream[(T, B)] = other match
+      case e: XEmptyStream[B] => new XEmptyStream
+      case ne: XNoEmptyStream[B] => new XNoEmptyStream[(T, B)]((elem, ne.elem), tail.zip(ne.tail))
   }
 
+  //********************** EMPTY
   private class XEmptyStream[T] extends XFiniteStream[T] {
 
     def tail: XStream[T] = new XEmptyStream
@@ -107,5 +112,7 @@ object XStreams {
     override def reduce[B](initial: B, combinator: (B, T) => B): B = initial
 
     override def iterator: Iterator[T] = Iterator.empty
+
+    override def zip[B](other: XStream[B]): XStream[(T, B)] = new XEmptyStream
   }
 }

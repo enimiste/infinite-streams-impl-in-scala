@@ -70,5 +70,10 @@ object App {
     val oddEven = stream.take(10)
       .groupBy(n => n % 2 == 0)
     println(oddEven)
+
+    stream.filter(n => n % 2 == 1)
+      .zip(stream.filter(n => n % 2 == 0))
+      .take(5)
+      .forEach(println)
   }
 }

@@ -18,6 +18,8 @@ trait XStream[T] {
   def flatMap[B](mapping: T => XStream[B]): XStream[B]
 
   def concat(other: XStream[T]): XStream[T]
+
+  def zip[B](other: XStream[B]): XStream[(T, B)]
 }
 
 
