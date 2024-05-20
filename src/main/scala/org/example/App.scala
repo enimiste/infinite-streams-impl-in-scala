@@ -5,7 +5,7 @@ object App {
     import org.example.xstreams.*
     import org.example.xstreams.XStreams.*
 
-    val stream: XStream[Int] = iterate(1, x => x + 1)
+    val stream: XStream[Int] = iterate(0, x => x + 1)
 
     stream.filter(n => n % 2 == 0)
       .take(5)
@@ -70,10 +70,19 @@ object App {
     val oddEven = stream.take(10)
       .groupBy(n => n % 2 == 0)
     println(oddEven)
+    println("-" * 20)
 
     stream.filter(n => n % 2 == 1)
       .zip(stream.filter(n => n % 2 == 0))
       .take(5)
       .forEach(println)
+    println("-" * 20)
+
+    val alphabet = iterate(0, n => n + 1).map[Char](n => (n % 26 + 65).toChar)
+    val alphabetZip = alphabet.zip(stream.skipWhile(n => n < 5)
+        .filter(n => n % 5 == 0))
+
+    alphabetZip.take(26).forEach(println)
+    val alphabetZipGroup = alphabetZip.take(1000).groupBy(_._1)
   }
 }
