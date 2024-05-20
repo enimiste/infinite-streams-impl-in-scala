@@ -86,6 +86,8 @@ object XStreams extends XStreamOps {
 
     override def window(windowSize: Int): XStream[XFiniteStream[T]] =
       new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize-1).window(windowSize))
+
+    override def peek(consumer: T => Unit): XStream[T] = ???
   }
 
   //********************** EMPTY
@@ -118,5 +120,7 @@ object XStreams extends XStreamOps {
     override def zip[B](other: XStream[B]): XStream[(T, B)] = new XEmptyStream
 
     override def window(windowSize: Int): XStream[XFiniteStream[T]] = new XEmptyStream
+
+    override def peek(consumer: T => Unit): XStream[T] = this
   }
 }

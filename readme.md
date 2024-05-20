@@ -187,7 +187,7 @@ object App {
     println(stream.take(1_000).size)//should be 10
     println("-" * 20)
 
-    val alphabet2 = circular(for i <- 0 to 25 yield (i + 65).toChar)
+    val alphabet2 = circular(for (i <- 0 to 25) yield (i + 65).toChar)
     alphabet2.take(30).forEach(println)
     println("-" * 20)
 

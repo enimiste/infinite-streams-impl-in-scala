@@ -47,6 +47,8 @@ trait XStream[T] {
   def zip[B](other: XStream[B]): XStream[(T, B)]
 
   def window(windowSize: Int): XStream[XFiniteStream[T]]
+
+  def peek(consumer: T => Unit): XStream[T]
 }
 
 

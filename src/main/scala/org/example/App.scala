@@ -88,7 +88,7 @@ object App {
     println(alphabetZipGroup)
     println("-" * 20)
 
-    println(stream.take(1_000).size)//should be 10
+    println(stream.take(1_000).size) //should be 10
     println("-" * 20)
 
     val alphabet2 = circular(for i <- 0 to 25 yield (i + 65).toChar)
@@ -97,6 +97,7 @@ object App {
 
     stream
       .skip(10)
+      .peek(println)
       .window(10)
       .take(5)
       .forEach(s => {
