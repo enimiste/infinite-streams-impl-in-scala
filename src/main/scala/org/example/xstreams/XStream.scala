@@ -48,7 +48,11 @@ trait XStream[T] {
 
   def window(windowSize: Int): XStream[XFiniteStream[T]]
 
-  def peek(consumer: T => Unit): XStream[T]
+  def peek(consumer: T => Unit): XStream[T] = 
+    map(item => {
+      consumer(item)
+      item
+    })
 }
 
 

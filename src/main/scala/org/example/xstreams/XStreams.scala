@@ -9,8 +9,9 @@ object XStreams extends XStreamOps {
   override def iterate[T](elem: T, op: T => T): XStream[T] =
     new XNoEmptyStream[T](elem, iterate(op(elem), op))
 
-  private class XNoEmptyStream[T](val elem: T, next: => XStream[T]) extends XFiniteStream[T] {
+  private class XNoEmptyStream[T](elem: => T, next: => XStream[T]) extends XFiniteStream[T] {
 
+    private def head: T = elem
     private def tail: XStream[T] = next
 
     override def take(nbr: Int): XFiniteStream[T] =
@@ -38,7 +39,7 @@ object XStreams extends XStreamOps {
       mapping(elem) match {
         case x: XEmptyStream[B] => tail.flatMap(mapping)
         case e: XNoEmptyStream[B] =>
-          new XNoEmptyStream[B](e.elem, e.tail.concat(tail.flatMap(mapping)))
+          new XNoEmptyStream[B](e.head, e.tail.concat(tail.flatMap(mapping)))
       }
     }
 
@@ -67,7 +68,7 @@ object XStreams extends XStreamOps {
         override def hasNext: Boolean = hasMoreElements
 
         override def next(): T = {
-          val r = stream.elem
+          val r = stream.head
           stream.tail match {
             case y: XEmptyStream[T] =>
               hasMoreElements = false
@@ -82,12 +83,11 @@ object XStreams extends XStreamOps {
 
     override def zip[B](other: XStream[B]): XStream[(T, B)] = other match
       case e: XEmptyStream[B] => new XEmptyStream
-      case ne: XNoEmptyStream[B] => new XNoEmptyStream[(T, B)]((elem, ne.elem), tail.zip(ne.tail))
+      case ne: XNoEmptyStream[B] => new XNoEmptyStream[(T, B)]((elem, ne.head), tail.zip(ne.tail))
 
     override def window(windowSize: Int): XStream[XFiniteStream[T]] =
       new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize-1).window(windowSize))
 
-    override def peek(consumer: T => Unit): XStream[T] = ???
   }
 
   //********************** EMPTY
@@ -121,6 +121,5 @@ object XStreams extends XStreamOps {
 
     override def window(windowSize: Int): XStream[XFiniteStream[T]] = new XEmptyStream
 
-    override def peek(consumer: T => Unit): XStream[T] = this
   }
 }

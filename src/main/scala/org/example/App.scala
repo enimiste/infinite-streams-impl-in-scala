@@ -97,13 +97,19 @@ object App {
 
     stream
       .skip(10)
-      .peek(println)
+      .peek(item => println("Peek : " + item))
       .window(10)
       .take(5)
       .forEach(s => {
         s.forEach(n => print(n + ", "))
         println()
       })
+    println("-" * 20)
+
+    stream
+      .peek(item => println("Peek _ : " + item))
+      .take(10)
+      .forEach(println)
     println("-" * 20)
   }
 }
