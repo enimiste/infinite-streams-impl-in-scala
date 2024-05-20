@@ -113,6 +113,7 @@ object App {
       .take(10)
       .forEach(println)
     println("-" * 20)
+
     val randomStream = generate(() => Random().nextInt(10_000_000))
     val rndSum = randomStream
       .peek(println)
@@ -120,8 +121,14 @@ object App {
       .foldLeft(0, Math.addExact)
     println("Random Sum : " + rndSum)
     println("-" * 20)
+
     println("Max : " + randomStream.take(1000).max((a, b) => a - b))
     println("Min : " + randomStream.take(1000).min((a, b) => a - b))
     println("-" * 20)
+
+    println("-" * 20)
+    val names = finite(Seq("NOUNI", "El", "Bachir", "SAISSI", "HASSANI", "Tamou"))
+    println(names.foldLeft("", (acc, s2) => acc + " " + s2))
+    println(names.foldRight("", (acc, s2) => acc + " " + s2))
   }
 }

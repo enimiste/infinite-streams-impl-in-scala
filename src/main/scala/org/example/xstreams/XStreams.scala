@@ -64,6 +64,12 @@ object XStreams extends XStreamOps {
         case _ => throw RuntimeException("Not supported operation")
       }
 
+    override def foldRight[B](initial: B, combinator: (B, T) => B): B =
+      tail match {
+        case x: XFiniteStream[T] => combinator(x.foldRight(initial, combinator), elem)
+        case _ => throw RuntimeException("Not supported operation")
+      }
+
     override def iterator: Iterator[T] = {
       class IteratorImpl(var stream: XNoEmptyStream[T]) extends Iterator[T] {
         var hasMoreElements: Boolean = true
@@ -119,6 +125,8 @@ object XStreams extends XStreamOps {
     override def skipWhile(predicate: T => Boolean): XStream[T] = new XEmptyStream
 
     override def foldLeft[B](initial: B, combinator: (B, T) => B): B = initial
+
+    override def foldRight[B](initial: B, combinator: (B, T) => B): B = initial
 
     override def iterator: Iterator[T] = Iterator.empty
 

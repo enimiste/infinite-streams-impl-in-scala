@@ -28,6 +28,9 @@ trait XStreamOps {
       val a = A(elems, 1)
       iterate(elems.head, x => a.next)
     }
+
+  def finite[T](items: Seq[T]): XFiniteStream[T] =
+    circular(items).take(items.size)
 }
 
 //Defines only intermediate operations
@@ -65,6 +68,8 @@ trait XStream[T] {
 trait XFiniteStream[T] extends XStream[T] {
   def foldLeft[B](initial: B, combinator: (B, T) => B): B
 
+  def foldRight[B](initial: B, combinator: (B, T) => B): B
+
   def collect[B[_]](bag: B[T], collector: (B[T], T) => B[T]): B[T] =
     foldLeft(bag, collector)
 
@@ -98,5 +103,5 @@ trait XFiniteStream[T] extends XStream[T] {
     min(comparator.reversed)
 
   def min(comparator: Comparator[T]): Option[T]
-  
+
 }
