@@ -1,5 +1,4 @@
-package org.example
-package xstreams
+package org.example.xstreams
 
 object XStreams {
   def once[T](elem: T): XStream[T] =
@@ -39,9 +38,8 @@ object XStreams {
     override def flatMap[B](mapping: T => XStream[B]): XStream[B] = {
       mapping(elem) match {
         case x: XEmptyStream[B] => tail.flatMap(mapping)
-        case e: XNoEmptyStream[B] => {
+        case e: XNoEmptyStream[B] =>
           new XNoEmptyStream[B](e.elem, e.tail.concat(tail.flatMap(mapping)))
-        }
       }
     }
 

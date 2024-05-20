@@ -1,5 +1,4 @@
-package org.example
-package xstreams
+package org.example.xstreams
 
 //Defines only intermediate operations
 trait XStream[T] {
