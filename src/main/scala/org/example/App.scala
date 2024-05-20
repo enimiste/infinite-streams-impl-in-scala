@@ -81,9 +81,14 @@ object App {
     val alphabet = iterate(0, n => n + 1).map[Char](n => (n % 26 + 65).toChar)
     val alphabetZip = alphabet.zip(stream.skipWhile(n => n < 5)
       .filter(n => n % 5 == 0))
+    println("-" * 20)
 
     alphabetZip.take(26).forEach(println)
     val alphabetZipGroup = alphabetZip.take(1000).groupBy(_._1, 0, (a, b) => a + b._2)
     println(alphabetZipGroup)
+    println("-" * 20)
+
+    println(stream.take(1_000_000).size)//should be 10
+    println("-" * 20)
   }
 }

@@ -46,4 +46,13 @@ trait XFiniteStream[T] extends XStream[T] {
   def forEach(consumer: T => Unit): Unit
 
   def iterator: Iterator[T]
+
+  def size: Int = {
+    val countBag: Array[Int] = Array(0)
+    forEach(n => {
+      val oldValue = countBag(0)
+      countBag(0) = oldValue + 1
+    })
+    countBag(0)
+  }
 }
