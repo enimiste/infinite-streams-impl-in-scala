@@ -21,14 +21,6 @@ object XStreams extends XStreamOps {
       if nbr == 0 then new XEmptyStream
       else new XNoEmptyStream(elem, tail.take(nbr - 1))
 
-    override def forEach(consumer: T => Unit): Unit = {
-      consumer(elem)
-      tail match {
-        case x: XFiniteStream[T] => x.forEach(consumer)
-        case _ => throw RuntimeException("Not supported operation")
-      }
-    }
-
     override def filter(predicate: T => Boolean): XStream[T] =
       if (predicate(elem)) new XNoEmptyStream(elem, tail.filter(predicate))
       else tail.filter(predicate)
@@ -116,8 +108,6 @@ object XStreams extends XStreamOps {
     def tail: XStream[T] = this
 
     override def take(nbr: Int): XFiniteStream[T] = this
-
-    override def forEach(consumer: T => Unit): Unit = ()
 
     override def filter(predicate: T => Boolean): XStream[T] = this
 

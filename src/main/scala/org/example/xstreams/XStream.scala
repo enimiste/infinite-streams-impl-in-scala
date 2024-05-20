@@ -86,7 +86,11 @@ trait XFiniteStream[T] extends XStream[T] {
   def groupBy[K](keyGenerator: T => K): Map[K, List[T]] =
     groupBy(keyGenerator, List[T](), (list, item) => list ++ List(item))
 
-  def forEach(consumer: T => Unit): Unit
+  def forEach(consumer: T => Unit): Unit = {
+    val it = iterator
+    while (it.hasNext) consumer(it.next())
+  }
+
 
   def iterator: Iterator[T]
 

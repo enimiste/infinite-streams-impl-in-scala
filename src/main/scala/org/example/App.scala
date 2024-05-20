@@ -30,7 +30,7 @@ object App {
       .forEach(println)
     println("-" * 20)
     stream.skip(1000)
-      .take(10)
+      .take(1_000_00)
       .forEach(println)
     println("-" * 20)
 
