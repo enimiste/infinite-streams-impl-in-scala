@@ -11,17 +11,20 @@ object XStreams {
   def iterate[T](elem: T, op: T => T): XStream[T] =
     new XNoEmptyStream[T](elem, iterate(op(elem), op))
 
-  private class XNoEmptyStream[T](val elem: T, next: => XStream[T]) extends XStream[T] {
+  private class XNoEmptyStream[T](val elem: T, next: => XStream[T]) extends XFiniteStream[T] {
 
     private def tail: XStream[T] = next
 
-    override def take(nbr: Int): XStream[T] =
+    override def take(nbr: Int): XFiniteStream[T] =
       if nbr == 0 then new XEmptyStream
       else new XNoEmptyStream(elem, tail.take(nbr - 1))
 
     override def forEach(consumer: T => Unit): Unit = {
       consumer(elem)
-      tail.forEach(consumer)
+      tail match {
+        case x: XFiniteStream[T] => x.forEach(consumer)
+        case _ => throw RuntimeException("Not supported operation")
+      }
     }
 
     override def filter(predicate: T => Boolean): XStream[T] =
@@ -55,7 +58,10 @@ object XStreams {
       else this
 
     override def reduce[B](initial: B, combinator: (B, T) => B): B =
-      tail.reduce(combinator(initial, elem), combinator)
+      tail match {
+        case x: XFiniteStream[T] => x.reduce(combinator(initial, elem), combinator)
+        case _ => throw RuntimeException("Not supported operation")
+      }
 
     override def iterator: Iterator[T] = {
       class IteratorImpl(var stream: XNoEmptyStream[T]) extends Iterator[T] {
@@ -78,11 +84,11 @@ object XStreams {
     }
   }
 
-  private class XEmptyStream[T] extends XStream[T] {
+  private class XEmptyStream[T] extends XFiniteStream[T] {
 
     def tail: XStream[T] = new XEmptyStream
 
-    override def take(nbr: Int): XStream[T] = new XEmptyStream
+    override def take(nbr: Int): XFiniteStream[T] = new XEmptyStream
 
     override def forEach(consumer: T => Unit): Unit = ()
 

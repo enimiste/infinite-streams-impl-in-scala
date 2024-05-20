@@ -1,9 +1,10 @@
 package org.example
 package xstreams
 
+//Defines only intermediate operations
 trait XStream[T] {
 
-  def take(nbr: Int): XStream[T]
+  def take(nbr: Int): XFiniteStream[T]
 
   def takeWhile(predicate: T => Boolean): XStream[T]
 
@@ -18,12 +19,11 @@ trait XStream[T] {
   def flatMap[B](mapping: T => XStream[B]): XStream[B]
 
   def concat(other: XStream[T]): XStream[T]
+}
 
-  def iterator: Iterator[T]
 
-  //Terminal operations
-  def forEach(consumer: T => Unit): Unit
-
+//Defines terminal operations
+trait XFiniteStream[T] extends XStream[T] {
   def reduce[B](initial: B, combinator: (B, T) => B): B
 
   def collect[B[_]](bag: B[T], collector: (B[T], T) => B[T]): B[T] =
@@ -39,4 +39,8 @@ trait XStream[T] {
       groups.+((k, nv))
     })
   }
+
+  def forEach(consumer: T => Unit): Unit
+
+  def iterator: Iterator[T]
 }
