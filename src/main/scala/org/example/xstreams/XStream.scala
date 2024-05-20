@@ -81,13 +81,19 @@ trait XFiniteStream[T] extends XStream[T] {
 
   def toList: List[T] = collect(ListBuffer.empty[T], (list, item) => list += item).toList
 
-  def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B] =
-    foldLeft(Map[K, B](), (groups, item) => {
+  def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B] = {
+    val groups = scala.collection.mutable.HashMap.empty[K, B]
+    val it = iterator
+    while (it.hasNext) {
+      val item = it.next()
       val k: K = keyGenerator(item)
       val v: B = groups.getOrElse(k, initial)
       val nv: B = combinator(v, item)
       groups.+((k, nv))
-    })
+    }
+
+    groups.toMap
+  }
 
   def groupBy[K](keyGenerator: T => K): Map[K, List[T]] =
     groupBy(keyGenerator, List[T](), (list, item) => list ++ List(item))
