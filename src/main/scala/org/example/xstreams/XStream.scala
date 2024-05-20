@@ -1,6 +1,7 @@
 package org.example.xstreams
 
 import java.util.Comparator
+import scala.collection.mutable.ListBuffer
 
 trait XStreamOps {
   def empty[T]: XFiniteStream[T]
@@ -78,7 +79,7 @@ trait XFiniteStream[T] extends XStream[T] {
   def collect[B[_]](bag: B[T], collector: (B[T], T) => B[T]): B[T] =
     foldLeft(bag, collector)
 
-  def toList: List[T] = collect(List[T](), (list, item) => list ++ List(item))
+  def toList: List[T] = collect(ListBuffer.empty[T], (list, item) => list += item).toList
 
   def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B] =
     foldLeft(Map[K, B](), (groups, item) => {
