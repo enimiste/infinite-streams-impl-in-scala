@@ -88,7 +88,7 @@ object App {
     println(alphabetZipGroup)
     println("-" * 20)
 
-    println(stream.take(1_000_000).size)//should be 10
+    println(stream.take(1_000).size)//should be 10
     println("-" * 20)
   }
 }
