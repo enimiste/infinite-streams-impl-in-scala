@@ -45,12 +45,12 @@ object App {
     println("-" * 20)
 
     val sum = stream.take(10)
-      .reduce(0, Math.addExact)
+      .foldLeft(0, Math.addExact)
     println("Sum : " + sum)
     println("-" * 20)
 
     val prod = stream.take(10)
-      .reduce(1, Math.multiplyExact)
+      .foldLeft(1, Math.multiplyExact)
     println("Product : " + prod)
     println("-" * 20)
 
@@ -117,7 +117,7 @@ object App {
     val rndSum = randomStream
       .peek(println)
       .take(100)
-      .reduce(0, Math.addExact)
+      .foldLeft(0, Math.addExact)
     println("Random Sum : " + rndSum)
     println("-" * 20)
     println("Max : " + randomStream.take(1000).max((a, b) => a - b))

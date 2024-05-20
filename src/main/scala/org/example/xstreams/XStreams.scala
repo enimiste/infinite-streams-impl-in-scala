@@ -58,9 +58,9 @@ object XStreams extends XStreamOps {
       if (predicate(elem)) tail.skipWhile(predicate)
       else this
 
-    override def reduce[B](initial: B, combinator: (B, T) => B): B =
+    override def foldLeft[B](initial: B, combinator: (B, T) => B): B =
       tail match {
-        case x: XFiniteStream[T] => x.reduce(combinator(initial, elem), combinator)
+        case x: XFiniteStream[T] => x.foldLeft(combinator(initial, elem), combinator)
         case _ => throw RuntimeException("Not supported operation")
       }
 
@@ -92,7 +92,7 @@ object XStreams extends XStreamOps {
       new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize - 1).window(windowSize))
 
     override def min(comparator: Comparator[T]): Option[T] =
-      Some(reduce(head, (min, item) => if comparator.compare(min, item) > 0 then item else min))
+      Some(foldLeft(head, (min, item) => if comparator.compare(min, item) > 0 then item else min))
   }
 
   //********************** EMPTY
@@ -118,7 +118,7 @@ object XStreams extends XStreamOps {
 
     override def skipWhile(predicate: T => Boolean): XStream[T] = new XEmptyStream
 
-    override def reduce[B](initial: B, combinator: (B, T) => B): B = initial
+    override def foldLeft[B](initial: B, combinator: (B, T) => B): B = initial
 
     override def iterator: Iterator[T] = Iterator.empty
 

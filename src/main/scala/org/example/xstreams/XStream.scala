@@ -63,15 +63,15 @@ trait XStream[T] {
 
 //Defines terminal operations
 trait XFiniteStream[T] extends XStream[T] {
-  def reduce[B](initial: B, combinator: (B, T) => B): B
+  def foldLeft[B](initial: B, combinator: (B, T) => B): B
 
   def collect[B[_]](bag: B[T], collector: (B[T], T) => B[T]): B[T] =
-    reduce(bag, collector)
+    foldLeft(bag, collector)
 
   def toList: List[T] = collect(List[T](), (list, item) => list ++ List(item))
 
   def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B] =
-    reduce(Map[K, B](), (groups, item) => {
+    foldLeft(Map[K, B](), (groups, item) => {
       val k: K = keyGenerator(item)
       val v: B = groups.getOrElse(k, initial)
       val nv: B = combinator(v, item)
@@ -98,4 +98,5 @@ trait XFiniteStream[T] extends XStream[T] {
     min(comparator.reversed)
 
   def min(comparator: Comparator[T]): Option[T]
+  
 }
