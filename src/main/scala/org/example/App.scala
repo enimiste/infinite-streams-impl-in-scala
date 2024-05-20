@@ -30,7 +30,7 @@ object App {
       .forEach(println)
     println("-" * 20)
     stream.skip(1000)
-      .take(1_000_00)
+      .take(10)
       .forEach(println)
     println("-" * 20)
 
@@ -90,7 +90,7 @@ object App {
     println(alphabetZipGroup)
     println("-" * 20)
 
-    println(stream.take(1_000).size) //should be 10
+    println(stream.take(1_000_000).size) //should be 10
     println("-" * 20)
 
     val alphabet2 = circular(for i <- 0 to 25 yield (i + 65).toChar)

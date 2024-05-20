@@ -53,12 +53,6 @@ object XStreams extends XStreamOps {
       if (predicate(elem)) tail.skipWhile(predicate)
       else this
 
-    override def foldLeft[B](initial: B, combinator: (B, T) => B): B =
-      tail match {
-        case x: XFiniteStream[T] => x.foldLeft(combinator(initial, elem), combinator)
-        case _ => throw RuntimeException("Not supported operation")
-      }
-
     override def foldRight[B](initial: B, combinator: (B, T) => B): B =
       tail match {
         case x: XFiniteStream[T] => combinator(x.foldRight(initial, combinator), elem)
@@ -92,9 +86,6 @@ object XStreams extends XStreamOps {
     override def window(windowSize: Int): XStream[XFiniteStream[T]] =
       new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize - 1).window(windowSize))
 
-    override def min(comparator: Comparator[T]): Option[T] =
-      Some(foldLeft(head, (min, item) => if comparator.compare(min, item) > 0 then item else min))
-
     override def reversed: XFiniteStream[T] =
       tail match {
         case x: XFiniteStream[T] => x.reversed concat once(elem)
@@ -125,8 +116,6 @@ object XStreams extends XStreamOps {
 
     override def skipWhile(predicate: T => Boolean): XStream[T] = this
 
-    override def foldLeft[B](initial: B, combinator: (B, T) => B): B = initial
-
     override def foldRight[B](initial: B, combinator: (B, T) => B): B = initial
 
     override def iterator: Iterator[T] = Iterator.empty
@@ -134,8 +123,6 @@ object XStreams extends XStreamOps {
     override def zip[B](other: XStream[B]): XStream[(T, B)] = new XEmptyStream
 
     override def window(windowSize: Int): XStream[XFiniteStream[T]] = new XEmptyStream
-
-    override def min(comparator: Comparator[T]): Option[T] = None
 
     override def reversed: XFiniteStream[T] = this
   }

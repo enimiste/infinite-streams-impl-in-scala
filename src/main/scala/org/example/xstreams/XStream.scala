@@ -66,7 +66,12 @@ trait XStream[T] {
 
 //Defines terminal operations
 trait XFiniteStream[T] extends XStream[T] {
-  def foldLeft[B](initial: B, combinator: (B, T) => B): B
+  def foldLeft[B](initial: B, combinator: (B, T) => B): B = {
+    val it = iterator
+    var acc = initial
+    while (it.hasNext) acc = combinator(acc, it.next())
+    acc
+  }
 
   def foldRight[B](initial: B, combinator: (B, T) => B): B
 
@@ -91,22 +96,31 @@ trait XFiniteStream[T] extends XStream[T] {
     while (it.hasNext) consumer(it.next())
   }
 
-
   def iterator: Iterator[T]
 
   def size: Int = {
-    val countBag: Array[Int] = Array(0)
-    forEach(n => {
-      val oldValue = countBag(0)
-      countBag(0) = oldValue + 1
-    })
-    countBag(0)
+    val it = iterator
+    var count = 0
+    while (it.hasNext) {
+      count += 1
+      it.next()
+    }
+    count
   }
 
   def max(comparator: Comparator[T]): Option[T] =
     min(comparator.reversed)
 
-  def min(comparator: Comparator[T]): Option[T]
+  def min(comparator: Comparator[T]): Option[T] = {
+    val it = iterator
+    if (!it.hasNext) return None
+    var min = it.next()
+    while (it.hasNext) {
+      val item = it.next()
+      if (comparator.compare(item, min) < 0) min = item
+    }
+    Some(min)
+  }
 
   def reversed: XFiniteStream[T]
 
