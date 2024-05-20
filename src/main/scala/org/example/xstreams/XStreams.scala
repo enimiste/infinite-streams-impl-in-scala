@@ -1,5 +1,7 @@
 package org.example.xstreams
 
+import java.util.Comparator
+
 object XStreams extends XStreamOps {
   override def empty[T]: XStream[T] = new XEmptyStream[T]
 
@@ -12,6 +14,7 @@ object XStreams extends XStreamOps {
   private class XNoEmptyStream[T](elem: => T, next: => XStream[T]) extends XFiniteStream[T] {
 
     private def head: T = elem
+
     private def tail: XStream[T] = next
 
     override def take(nbr: Int): XFiniteStream[T] =
@@ -86,8 +89,10 @@ object XStreams extends XStreamOps {
       case ne: XNoEmptyStream[B] => new XNoEmptyStream[(T, B)]((elem, ne.head), tail.zip(ne.tail))
 
     override def window(windowSize: Int): XStream[XFiniteStream[T]] =
-      new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize-1).window(windowSize))
+      new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize - 1).window(windowSize))
 
+    override def min(comparator: Comparator[T]): Option[T] =
+      Some(reduce(head, (min, item) => if comparator.compare(min, item) > 0 then item else min))
   }
 
   //********************** EMPTY
@@ -121,5 +126,6 @@ object XStreams extends XStreamOps {
 
     override def window(windowSize: Int): XStream[XFiniteStream[T]] = new XEmptyStream
 
+    override def min(comparator: Comparator[T]): Option[T] = None
   }
 }

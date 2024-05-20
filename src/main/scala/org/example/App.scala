@@ -120,5 +120,8 @@ object App {
       .reduce(0, Math.addExact)
     println("Random Sum : " + rndSum)
     println("-" * 20)
+    println("Max : " + randomStream.take(1000).max((a, b) => a - b))
+    println("Min : " + randomStream.take(1000).min((a, b) => a - b))
+    println("-" * 20)
   }
 }

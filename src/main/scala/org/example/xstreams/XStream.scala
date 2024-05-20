@@ -1,5 +1,7 @@
 package org.example.xstreams
 
+import java.util.Comparator
+
 trait XStreamOps {
   def empty[T]: XStream[T]
 
@@ -91,4 +93,9 @@ trait XFiniteStream[T] extends XStream[T] {
     })
     countBag(0)
   }
+
+  def max(comparator: Comparator[T]): Option[T] =
+    min(comparator.reversed)
+
+  def min(comparator: Comparator[T]): Option[T]
 }
