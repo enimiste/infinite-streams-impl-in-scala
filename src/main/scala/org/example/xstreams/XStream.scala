@@ -140,7 +140,7 @@ trait XFiniteStream[T] extends XStream[T] {
   def matchAll(predicate: T => Boolean): Boolean = {
     val it = iterator
     while (it.hasNext) {
-      if (!predicate(it.next())) return false;
+      if (!predicate(it.next())) return false
     }
     true
   }
@@ -148,7 +148,7 @@ trait XFiniteStream[T] extends XStream[T] {
   def matchAny(predicate: T => Boolean): Boolean = {
     val it = iterator
     while (it.hasNext) {
-      if (predicate(it.next())) return true;
+      if (predicate(it.next())) return true
     }
     false
   }
