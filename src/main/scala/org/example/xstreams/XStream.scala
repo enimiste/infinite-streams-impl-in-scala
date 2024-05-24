@@ -136,4 +136,20 @@ trait XFiniteStream[T] extends XStream[T] {
   def reversed: XFiniteStream[T] = XStreams.finite(toList.reverse)
 
   def concat(other: XFiniteStream[T]): XFiniteStream[T]
+
+  def matchAll(predicate: T => Boolean): Boolean = {
+    val it = iterator
+    while (it.hasNext) {
+      if (!predicate(it.next())) return false;
+    }
+    true
+  }
+
+  def matchAny(predicate: T => Boolean): Boolean = {
+    val it = iterator
+    while (it.hasNext) {
+      if (predicate(it.next())) return true;
+    }
+    false
+  }
 }

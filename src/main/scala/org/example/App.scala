@@ -6,7 +6,7 @@ object App {
   def main(args: Array[String]): Unit = {
     testXStreamsApi()
   }
-  
+
   def testXStreamsApi(): Unit =
     import org.example.xstreams.*
     import org.example.xstreams.XStreams.*
@@ -156,6 +156,20 @@ object App {
       .take(1_000)
       .reversed
       .take(10)
-      .forEach(print)
+      .forEach(println)
+
+    println("-" * 20)
+    println(
+      stream
+        .take(100)
+        .matchAll(_ % 2 == 0)
+    )
+
+    println("-" * 20)
+    println(
+      stream
+        .take(100)
+        .matchAny(_ % 2 == 0)
+    )
 
 }
