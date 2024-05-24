@@ -4,6 +4,10 @@ import scala.util.Random
 
 object App {
   def main(args: Array[String]): Unit = {
+    testXStreamsApi()
+  }
+  
+  def testXStreamsApi(): Unit =
     import org.example.xstreams.*
     import org.example.xstreams.XStreams.*
 
@@ -153,5 +157,5 @@ object App {
       .reversed
       .take(10)
       .forEach(print)
-  }
+
 }
