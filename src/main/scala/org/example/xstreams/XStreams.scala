@@ -9,7 +9,8 @@ object XStreams extends XStreamOps {
   override def iterate[T](elem: T, op: T => T): XStream[T] =
     new XNoEmptyStream[T](elem, iterate(op(elem), op))
 
-  private class XNoEmptyStream[T](elem: => T, next: => XStream[T]) extends XFiniteStream[T] {
+  private class XNoEmptyStream[T](elem: => T, next: => XStream[T])
+      extends XFiniteStream[T] {
 
     private def head: T = elem
 
@@ -23,7 +24,8 @@ object XStreams extends XStreamOps {
       if (predicate(elem)) new XNoEmptyStream(elem, tail.filter(predicate))
       else tail.filter(predicate)
 
-    override def map[B](mapping: T => B): XStream[B] = new XNoEmptyStream(mapping(elem), tail.map(mapping))
+    override def map[B](mapping: T => B): XStream[B] =
+      new XNoEmptyStream(mapping(elem), tail.map(mapping))
 
     override def concat(other: XStream[T]): XStream[T] =
       new XNoEmptyStream[T](elem, tail.concat(other))
@@ -53,7 +55,8 @@ object XStreams extends XStreamOps {
 
     override def foldRight[B](initial: B, combinator: (B, T) => B): B =
       tail match {
-        case x: XFiniteStream[T] => combinator(x.foldRight(initial, combinator), elem)
+        case x: XFiniteStream[T] =>
+          combinator(x.foldRight(initial, combinator), elem)
         case _ => throw RuntimeException("Not supported operation")
       }
 
@@ -79,14 +82,18 @@ object XStreams extends XStreamOps {
 
     override def zip[B](other: XStream[B]): XStream[(T, B)] = other match
       case e: XEmptyStream[B] => new XEmptyStream
-      case ne: XNoEmptyStream[B] => new XNoEmptyStream[(T, B)]((elem, ne.head), tail.zip(ne.tail))
+      case ne: XNoEmptyStream[B] =>
+        new XNoEmptyStream[(T, B)]((elem, ne.head), tail.zip(ne.tail))
 
     override def window(windowSize: Int): XStream[XFiniteStream[T]] =
-      new XNoEmptyStream[XFiniteStream[T]](take(windowSize), tail.skip(windowSize - 1).window(windowSize))
+      new XNoEmptyStream[XFiniteStream[T]](
+        take(windowSize),
+        tail.skip(windowSize - 1).window(windowSize)
+      )
 
   }
 
-  //********************** EMPTY
+  // ********************** EMPTY
   private class XEmptyStream[T] extends XFiniteStream[T] {
 
     def tail: XStream[T] = this
@@ -97,7 +104,8 @@ object XStreams extends XStreamOps {
 
     override def map[B](mapping: T => B): XStream[B] = new XEmptyStream
 
-    override def flatMap[B](mapping: T => XStream[B]): XStream[B] = new XEmptyStream
+    override def flatMap[B](mapping: T => XStream[B]): XStream[B] =
+      new XEmptyStream
 
     override def concat(other: XStream[T]): XStream[T] = other
 
@@ -115,7 +123,8 @@ object XStreams extends XStreamOps {
 
     override def zip[B](other: XStream[B]): XStream[(T, B)] = new XEmptyStream
 
-    override def window(windowSize: Int): XStream[XFiniteStream[T]] = new XEmptyStream
+    override def window(windowSize: Int): XStream[XFiniteStream[T]] =
+      new XEmptyStream
 
     override def reversed: XFiniteStream[T] = this
   }

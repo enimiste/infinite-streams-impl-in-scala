@@ -64,7 +64,6 @@ trait XStream[T] {
     })
 }
 
-
 //Defines terminal operations
 trait XFiniteStream[T] extends XStream[T] {
   def foldLeft[B](initial: B, combinator: (B, T) => B): B = {
@@ -79,9 +78,14 @@ trait XFiniteStream[T] extends XStream[T] {
   def collect[B[_]](bag: B[T], collector: (B[T], T) => B[T]): B[T] =
     foldLeft(bag, collector)
 
-  def toList: List[T] = collect(ListBuffer.empty[T], (list, item) => list += item).toList
+  def toList: List[T] =
+    collect(ListBuffer.empty[T], (list, item) => list += item).toList
 
-  def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B] = {
+  def groupBy[K, B](
+      keyGenerator: T => K,
+      initial: B,
+      combinator: (B, T) => B
+  ): Map[K, B] = {
     val groups = scala.collection.mutable.HashMap.empty[K, B]
     val it = iterator
     while (it.hasNext) {
