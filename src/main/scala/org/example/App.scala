@@ -7,7 +7,7 @@ object App {
     testXStreamsApi()
   }
 
-  def testXStreamsApi(): Unit =
+  private def testXStreamsApi(): Unit =
     import org.example.xstreams.*
     import org.example.xstreams.XStreams.*
 
