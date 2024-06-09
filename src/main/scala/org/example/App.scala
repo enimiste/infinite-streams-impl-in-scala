@@ -1,23 +1,31 @@
 package org.example
 
+import org.example.xstreams.api.*
+import org.example.xstreams.impl.XStreams.*
+
 import scala.util.Random
 
 object App {
   def main(args: Array[String]): Unit = {
-    testXStreamsApi()
+    val stream: XStream[Int] = iterate(0, x => x + 1)
+    println(
+      stream
+        .skip(1)
+        .flatMap(n => once("A" * n)
+          //concat fixed("B" * n).take(5)
+        )
+        .take(5)
+        .toList
+    )
+    //    testXStreamsApi()
   }
 
+  /**
+   * Examples of using the XStream API
+   */
   private def testXStreamsApi(): Unit =
-    import org.example.xstreams.*
-    import org.example.xstreams.XStreams.*
 
     val stream: XStream[Int] = iterate(0, x => x + 1)
-
-    stream
-      .filter(n => n % 2 == 0)
-      .take(5)
-      .forEach(println)
-    println("-" * 20)
 
     stream
       .filter(n => n % 2 == 0)
@@ -32,7 +40,7 @@ object App {
     println("-" * 20)
 
     stream
-      .flatMap(n => once("A" * n) concat fixed("B" * n).take(3))
+      .flatMap(n => once("A" * n) concat fixed("B" * n).take(5))
       .take(5)
       .forEach(println)
     println("-" * 20)
