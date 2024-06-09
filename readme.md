@@ -131,14 +131,22 @@ trait XStream[T] {
    */
   def map[B](mapping: T => B): XStream[B]
 
-  /**
-   * Returns a new stream that merges all the sub stream into one
+  /** Returns a new stream that merges all the sub stream into one
+   *
+   * @param asIterableOne
+   * @tparam B
+   * @return
+   */
+  def flatten[B](implicit asIterableOne: T => IterableOnce[B]): XStream[B]
+
+  /** Returns a new stream that merges all the sub stream into one, after
+   * applying the mapping function to each one of the elements
    *
    * @param mapping
    * @tparam B
    * @return
    */
-  def flatMap[B](mapping: T => XStream[B]): XStream[B]
+  def flatMap[B, C](mapping: T => B)(implicit asIterableOne: B => IterableOnce[C]): XStream[C]
 
   /**
    * Returns a new stream that concatenate this stream with another one
@@ -146,7 +154,7 @@ trait XStream[T] {
    * @param other
    * @return
    */
-  def concat(other: XStream[T]): XStream[T]
+  def concat(other: => XStream[T]): XStream[T]
 
   /**
    * Returns a new stream where each element is a tuple of the elements of this stream and another.

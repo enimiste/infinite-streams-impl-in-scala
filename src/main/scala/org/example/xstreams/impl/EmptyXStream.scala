@@ -12,10 +12,7 @@ private class EmptyXStream[T] extends FiniteXStream[T] {
 
   override def map[B](mapping: T => B): XStream[B] = new EmptyXStream
 
-  override def flatMap[B](mapping: T => XStream[B]): XStream[B] =
-    new EmptyXStream
-
-  override def concat(other: XStream[T]): XStream[T] = other
+  override def concat(other: => XStream[T]): XStream[T] = other
 
   override def concat(other: FiniteXStream[T]): FiniteXStream[T] = other
 
@@ -35,4 +32,8 @@ private class EmptyXStream[T] extends FiniteXStream[T] {
     new EmptyXStream
 
   override def reversed: FiniteXStream[T] = this
+
+  override def flatten[B](implicit
+      asIterableOne: T => IterableOnce[B]
+  ): XStream[B] = new EmptyXStream
 }

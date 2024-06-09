@@ -10,9 +10,8 @@ object App {
     testXStreamsApi()
   }
 
-  /**
-   * Examples of using the XStream API
-   */
+  /** Examples of using the XStream API
+    */
   private def testXStreamsApi(): Unit =
 
     val stream: XStream[Int] = iterate(0, x => x + 1)
@@ -169,5 +168,21 @@ object App {
         .take(100)
         .matchAny(_ % 2 == 0)
     )
+
+    println("-" * 20)
+    stream
+      .skip(10)
+      .map(i => finite(0 to i))
+      .flatten(fs => fs.iterator)
+      // .flatMap(i => finite(i to (10+i)))
+      // .flatMap(i => iterate(i + 1000, x => x + 1))
+      .take(50)
+      .forEach(println)
+
+    println("-" * 20)
+    fromIterator(Seq("777", "888").iterator)
+      .concat(once("999"))
+      .take(10)
+      .forEach(println)
 
 }

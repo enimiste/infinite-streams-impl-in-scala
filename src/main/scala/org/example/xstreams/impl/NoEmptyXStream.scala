@@ -1,8 +1,10 @@
 package org.example.xstreams.impl
 
 import org.example.xstreams.api.{FiniteXStream, XStream}
+import org.example.xstreams.impl.XStreams.fromIterator
 
-private class NoEmptyXStream[T](elem: => T, next: => XStream[T]) extends FiniteXStream[T] {
+private class NoEmptyXStream[T](elem: => T, next: => XStream[T])
+    extends FiniteXStream[T] {
 
   private def head: T = elem
 
@@ -19,19 +21,17 @@ private class NoEmptyXStream[T](elem: => T, next: => XStream[T]) extends FiniteX
   override def map[B](mapping: T => B): XStream[B] =
     new NoEmptyXStream(mapping(elem), tail.map(mapping))
 
-  override def concat(other: XStream[T]): XStream[T] =
+  override def concat(other: => XStream[T]): XStream[T] =
     new NoEmptyXStream[T](elem, tail.concat(other))
 
   override def concat(other: FiniteXStream[T]): FiniteXStream[T] =
     new NoEmptyXStream[T](elem, tail.concat(other))
 
-  override def flatMap[B](mapping: T => XStream[B]): XStream[B] = {
-    mapping(elem) match {
-      case x: EmptyXStream[B] => tail.flatMap(mapping)
-      case e: NoEmptyXStream[B] =>
-        new NoEmptyXStream[B](e.head, e.tail.concat(tail.flatMap(mapping)))
-    }
-  }
+  override def flatten[B](implicit
+      asIterableOne: T => IterableOnce[B]
+  ): XStream[B] =
+    fromIterator(asIterableOne(head).iterator)
+      .concat(next.flatten(asIterableOne))
 
   override def skip(nbr: Int): XStream[T] =
     if nbr == 0 then this
