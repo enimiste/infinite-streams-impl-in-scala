@@ -173,16 +173,29 @@ object App {
     stream
       .skip(10)
       .map(i => finite(0 to i))
-      .flatten(fs => fs.iterator)
-      // .flatMap(i => finite(i to (10+i)))
-      // .flatMap(i => iterate(i + 1000, x => x + 1))
-      .take(50)
+      .flatten
+      .take(15)
       .forEach(println)
 
     println("-" * 20)
     fromIterator(Seq("777", "888").iterator)
       .concat(once("999"))
       .take(10)
+      .forEach(println)
+
+    println("-" * 20)
+    case class Bag(item1: String, item2: String, item3: String)
+    val bagStream = finite(
+      Seq(Bag("A", "B", "C"), Bag("E", "F", "G"), Bag("H", "I", "J"))
+    )
+    implicit val bagAsIterableOnce: Bag => IterableOnce[String] = bag =>
+      new IterableOnce[String] {
+        override def iterator: Iterator[String] =
+          List(bag.item1, bag.item2, bag.item3).iterator
+      }
+    bagStream
+      .flatten
+      .take(100)
       .forEach(println)
 
 }

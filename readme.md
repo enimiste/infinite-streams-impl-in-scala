@@ -381,6 +381,35 @@ println(
 List(A, AA, AAA, AAAA, AAAAA)
 ```
 
+**Flatten example :**
+```scala
+case class Bag(item1: String, item2: String, item3: String)
+val bagStream = finite(
+  Seq(Bag("A", "B", "C"), Bag("E", "F", "G"), Bag("H", "I", "J"))
+)
+//Needed by the flatten function, because the Bag class doesn't implements IterableOne[+A] trait
+implicit val bagAsIterableOnce: Bag => IterableOnce[String] = bag =>
+  new IterableOnce[String] {
+    override def iterator: Iterator[String] =
+      List(bag.item1, bag.item2, bag.item3).iterator
+  }
+bagStream
+  .flatten
+  .take(100)
+  .forEach(println)
+```
+```text
+A
+B
+C
+E
+F
+G
+H
+I
+J
+```
+
 **More examples :**
 
 Open this repository on any editor supporting scala (VS Code/Metal, Intellij Idea, GitPod, ...).
