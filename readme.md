@@ -71,6 +71,14 @@ object XStreams {
    * @return
    */
   def finite[T](items: Seq[T]): XFiniteStream[T]
+
+  /** Returns a stream backed by the given iterator.
+   *
+   * @param iterator
+   * @tparam T
+   * @return
+   */
+  def fromIterator[T](iterator: Iterator[T]): XStream[T]
 }
 ```
 ### Intermediate/Transformation operations :
