@@ -7,17 +7,7 @@ import scala.util.Random
 
 object App {
   def main(args: Array[String]): Unit = {
-    val stream: XStream[Int] = iterate(0, x => x + 1)
-    println(
-      stream
-        .skip(1)
-        .flatMap(n => once("A" * n)
-          //concat fixed("B" * n).take(5)
-        )
-        .take(5)
-        .toList
-    )
-    //    testXStreamsApi()
+    testXStreamsApi()
   }
 
   /**
