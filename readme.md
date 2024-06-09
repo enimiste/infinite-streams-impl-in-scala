@@ -1,232 +1,372 @@
-# Scala learning by doing
-This implementation isn't performant nor optimal.   
+# Kata : Implementing infinite streams in Scala
+
+This a learning project.
+This implementation isn't performant nor optimal.
 Some operations throw `StackOverflowError` exceptions with big streams (ex: size, forEach).
 
 ## API :
-
+To use the `XStream` stream api you should call methods defined by the `XStreams` object.
+### Stream creation operations :
 ```scala
-package org.example.xstreams
-
-import java.util.Comparator
-
-trait XStreamOps {
+object XStreams {
+  /**
+   * Returns an empty stream
+   *
+   * @tparam T
+   * @return
+   */
   def empty[T]: XFiniteStream[T]
 
+  /**
+   * Returns a finite stream that has one element
+   *
+   * @param elem
+   * @tparam T
+   * @return
+   */
   def once[T](elem: T): XFiniteStream[T]
 
-  def fixed[T](elem: T): XStream[T] =
-    iterate(elem, identity)
+  /**
+   * Returns an infinite stream that always returns the same element
+   *
+   * @param elem
+   * @tparam T
+   * @return
+   */
+  def fixed[T](elem: T): XStream[T]
 
+  /**
+   * Returns an infinite stream that construct the next element from the last one using the op function
+   *
+   * @param elem
+   * @param op
+   * @tparam T
+   * @return
+   */
   def iterate[T](elem: T, op: T => T): XStream[T]
 
-  def generate[T](supplier: () => T): XStream[T] =
-    iterate(supplier(), x => supplier())
+  /**
+   * Returns an infinite stream that construct the element using the supplier
+   *
+   * @param supplier
+   * @tparam T
+   * @return
+   */
+  def generate[T](supplier: () => T): XStream[T]
 
-  def circular[T](elems: Seq[T]): XStream[T] =
-    if (elems.isEmpty) empty
-    else {
-      case class A(elems: Seq[T], var cursor: Int) {
-        def next: T = {
-          val r = elems(cursor)
-          cursor = (cursor + 1) % elems.size
-          r
-        }
-      }
-      val a = A(elems, 1)
-      iterate(elems.head, x => a.next)
-    }
+  /**
+   * Returns an infinite stream built from a finite sequence using a circular index
+   *
+   * @param elems
+   * @tparam T
+   * @return
+   */
+  def circular[T](elems: Seq[T]): XStream[T]
 
-  def finite[T](items: Seq[T]): XFiniteStream[T] =
-    circular(items).take(items.size)
+  /**
+   * Returns a finite stream backed by the supplied sequence
+   *
+   * @param items
+   * @tparam T
+   * @return
+   */
+  def finite[T](items: Seq[T]): XFiniteStream[T]
 }
-
-//Defines only intermediate operations
+```
+### Intermediate/Transformation operations :
+```scala
+/**
+ * XStream public API
+ *
+ * @tparam T
+ */
 trait XStream[T] {
 
+  /**
+   * Returns a new finite stream having at most nbr elements
+   *
+   * @param nbr
+   * @return
+   */
   def take(nbr: Int): XFiniteStream[T]
 
+  /**
+   * Returns a new stream having element that satisfy the predicate
+   *
+   * @param predicate
+   * @return
+   */
   def takeWhile(predicate: T => Boolean): XStream[T]
 
+  /**
+   * Returns a new stream with the nbr elements of the original stream skipped
+   *
+   * @param nbr
+   * @return
+   */
   def skip(nbr: Int): XStream[T]
 
+  /**
+   * Returns a new stream starting from the first element that don't match the predicate
+   *
+   * @param predicate
+   * @return
+   */
   def skipWhile(predicate: T => Boolean): XStream[T]
 
+  /**
+   * Returns a new stream with only elements that satisfy the given predicate
+   *
+   * @param predicate
+   * @return
+   */
   def filter(predicate: T => Boolean): XStream[T]
 
+  /**
+   * Returns a new stream where each element is transformed version of the original one (applying the given mapping function)
+   *
+   * @param mapping
+   * @tparam B
+   * @return
+   */
   def map[B](mapping: T => B): XStream[B]
 
+  /**
+   * Returns a new stream that merges all the sub stream into one
+   *
+   * @param mapping
+   * @tparam B
+   * @return
+   */
   def flatMap[B](mapping: T => XStream[B]): XStream[B]
 
+  /**
+   * Returns a new stream that concatenate this stream with another one
+   *
+   * @param other
+   * @return
+   */
   def concat(other: XStream[T]): XStream[T]
 
+  /**
+   * Returns a new stream where each element is a tuple of the elements of this stream and another.
+   * The length of this new stream is the length of the smallest one.
+   *
+   * @param other
+   * @tparam B
+   * @return
+   */
   def zip[B](other: XStream[B]): XStream[(T, B)]
 
+  /**
+   * Returns a new stream where each element is a finite stream of windowSize elements from this element
+   *
+   * @param windowSize
+   * @return
+   */
   def window(windowSize: Int): XStream[XFiniteStream[T]]
 
-  def peek(consumer: T => Unit): XStream[T] =
-    map(item => {
-      consumer(item)
-      item
-    })
+  /**
+   * Returns a new stream that execute the given consumer on each element
+   *
+   * @param consumer
+   * @return
+   */
+  def peek(consumer: T => Unit): XStream[T]
 }
+```
+### Terminal operations
+```scala
+/**
+ * Trait that defines operation that are safe to execute only (has also a meaning) on a finite stream
+ * <p>NB : A finite stream extends the API of the infinite stream.</p>
+ *
+ * @tparam T
+ */
+trait FiniteXStream[T] extends XStream[T] {
 
-
-//Defines terminal operations
-trait XFiniteStream[T] extends XStream[T] {
+  /**
+   * Left reducer
+   *
+   * @param initial
+   * @param combinator
+   * @tparam B
+   * @return
+   */
   def foldLeft[B](initial: B, combinator: (B, T) => B): B
 
+  /**
+   * Right reducer
+   * @param initial
+   * @param combinator
+   * @tparam B
+   * @return
+   */
   def foldRight[B](initial: B, combinator: (B, T) => B): B
 
-  def collect[B[_]](bag: B[T], collector: (B[T], T) => B[T]): B[T] =
-    foldLeft(bag, collector)
+  /**
+   * Collect stream data into a bag (List, Set, ...)
+   *
+   * @param bag
+   * @param collector
+   * @tparam B
+   * @return
+   */
+  def collect[B[_]](bag: B[T], collector: (B[T], T) => B[T]): B[T]
 
-  def toList: List[T] = collect(List[T](), (list, item) => list ++ List(item))
+  /**
+   * List implementation of the collect
+   *
+   * @return
+   */
+  def toList: List[T]
 
-  def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B] =
-    foldLeft(Map[K, B](), (groups, item) => {
-      val k: K = keyGenerator(item)
-      val v: B = groups.getOrElse(k, initial)
-      val nv: B = combinator(v, item)
-      groups.+((k, nv))
-    })
+  /**
+   * Returns a Map of the grouped data
+   *
+   * @param keyGenerator
+   * @param initial
+   * @param combinator
+   * @tparam K
+   * @tparam B
+   * @return
+   */
+  def groupBy[K, B](keyGenerator: T => K, initial: B, combinator: (B, T) => B): Map[K, B]
 
-  def groupBy[K](keyGenerator: T => K): Map[K, List[T]] =
-    groupBy(keyGenerator, List[T](), (list, item) => list ++ List(item))
+  /**
+   * List implementation of the groupBy
+   *
+   * @param keyGenerator
+   * @tparam K
+   * @return
+   */
+  def groupBy[K](keyGenerator: T => K): Map[K, List[T]]
 
+  /**
+   * Execute a given consumer over the elements of the stream
+   *
+   * @param consumer
+   */
   def forEach(consumer: T => Unit): Unit
 
+  /**
+   * Returns an iterator over the elements of  the stream
+   *
+   * @return
+   */
   def iterator: Iterator[T]
 
-  def size: Int = {
-    val countBag: Array[Int] = Array(0)
-    forEach(n => {
-      val oldValue = countBag(0)
-      countBag(0) = oldValue + 1
-    })
-    countBag(0)
-  }
+  /**
+   * Returns the element count of this stream
+   *
+   * @return
+   */
+  def size: Int
 
-  def max(comparator: Comparator[T]): Option[T] =
-    min(comparator.reversed)
+  /**
+   * Returns the biggest element of this stream using the given comparator.
+   * <ul>
+   *   <li>None if the stream is empty.</li>
+   *   <li>The biggest even there is duplicates.</li>
+   * </ul>
+   *
+   * @param comparator
+   * @return
+   */
+  def max(comparator: Comparator[T]): Option[T]
 
+  /**
+   * Returns the smallest element of this stream using the given comparator.
+   * <ul>
+   * <li>None if the stream is empty.</li>
+   * <li>The smallest even there is duplicates.</li>
+   * </ul>
+   *
+   * @param comparator
+   * @return
+   */
   def min(comparator: Comparator[T]): Option[T]
 
-  def reversed: XFiniteStream[T]
+  /**
+   * Returns a new finite stream that traverse elements in the reverse order
+   *
+   * @return
+   */
+  def reversed: FiniteXStream[T]
 
-  def concat(other: XFiniteStream[T]): XFiniteStream[T]
+  /**
+   * Returns a new finite stream that concatenate this stream with another one.
+   *
+   *<p>This overload of the concat method, force the return type to be FiniteXStream if the other stream is also finite</p>
+   *
+   * @param other
+   * @return
+   */
+  def concat(other: FiniteXStream[T]): FiniteXStream[T]
+
+  /**
+   * Returns True if all the elements of this stream matches the given predicate. Otherwise it returns False
+   * <p>It doesn't traverse all the stream in all cases. It stops on the first element that don't match the predicate</p>
+   *
+   * @param predicate
+   * @return
+   */
+  def matchAll(predicate: T => Boolean): Boolean
+
+  /**
+   * Returns True if any of the elements of this stream matches the given predicate. Otherwise it returns False.
+   *
+   * <p>It doesn't traverse all the stream in all the cases. It stops on the first element that don't match the predicate</p>
+   *
+   * @param predicate
+   * @return
+   */
+  def matchAny(predicate: T => Boolean): Boolean
 }
+
 ```
 
-## Usage :
+
+## Examples :
+**Imports :**
 ```scala
-package org.example
-
-object App {
-  def main(args: Array[String]): Unit = {
-    import org.example.xstreams.*
-    import org.example.xstreams.XStreams.*
-
-    val stream: XStream[Int] = iterate(0, x => x + 1)
-
-    stream.filter(n => n % 2 == 0)
-      .take(5)
-      .forEach(println)
-    println("-" * 20)
-
-    stream
-      .filter(n => n % 2 == 0)
-      .take(5)
-      .forEach(println)
-    println("-" * 20)
-
-    stream.map(n => "A" * n)
-      .take(4)
-      .forEach(println)
-    println("-" * 20)
-
-    stream.flatMap(n => once("A" * n) concat fixed("B" * n).take(3))
-      .take(5)
-      .forEach(println)
-    println("-" * 20)
-    stream.skip(1000)
-      .take(10)
-      .forEach(println)
-    println("-" * 20)
-
-    stream.takeWhile(n => n <= 10)
-      .take(100) //protection
-      .forEach(println)
-    println("-" * 20)
-
-    stream.skipWhile(n => n <= 10)
-      .take(5)
-      .forEach(println)
-    println("-" * 20)
-
-    val sum = stream.take(10)
-      .reduce(0, Math.addExact)
-    println("Sum : " + sum)
-    println("-" * 20)
-
-    val prod = stream.take(10)
-      .reduce(1, Math.multiplyExact)
-    println("Product : " + prod)
-    println("-" * 20)
-
-    val list = stream.take(10)
-      .collect(List[Int](), (list, item) => list ++ List(item))
-    println("As List   : " + list)
-    println("-" * 20)
-
-    val list2 = stream.take(10).toList
-    println("As List 2 : " + list2)
-    println("-" * 20)
-
-    for (item <- stream.take(10).iterator) println(item)
-    println("-" * 20)
-
-    for (item <- stream.take(10).iterator) println(item)
-    println("-" * 20)
-
-    val oddEven = stream.take(10)
-      .groupBy(n => n % 2 == 0)
-    println(oddEven)
-    println("-" * 20)
-
-    stream.filter(n => n % 2 == 1)
-      .zip(stream.filter(n => n % 2 == 0))
-      .take(5)
-      .forEach(println)
-    println("-" * 20)
-
-    val alphabet = iterate(0, n => n + 1).map[Char](n => (n % 26 + 65).toChar)
-    val alphabetZip = alphabet.zip(stream.skipWhile(n => n < 5)
-      .filter(n => n % 5 == 0))
-    println("-" * 20)
-
-    alphabetZip.take(26).forEach(println)
-    val alphabetZipGroup = alphabetZip.take(1000).groupBy(_._1, 0, (a, b) => a + b._2)
-    println(alphabetZipGroup)
-    println("-" * 20)
-
-    println(stream.take(1_000).size)//should be 10
-    println("-" * 20)
-
-    val alphabet2 = circular(for (i <- 0 to 25) yield (i + 65).toChar)
-    alphabet2.take(30).forEach(println)
-    println("-" * 20)
-
-    stream
-      .skip(10)
-      .window(10)
-      .take(5)
-      .forEach(s => {
-        s.forEach(n => print(n + ", "))
-        println()
-      })
-    println("-" * 20)
-  }
-}
-
-
+import org.example.xstreams.api.*
+import org.example.xstreams.impl.XStreams.*
 ```
+**Create an infinite stream representing all integer numbers :**
+```scala
+val stream: XStream[Int] = iterate(0, x => x + 1)
+```
+**Filter only even numbers then print the first 10 numbers :**
+```scala
+stream
+      .filter(n => n % 2 == 0)//Infinite stream
+      .take(5)//Finite stream
+      .forEach(println)
+```
+```text
+0
+2
+4
+6
+8
+```
+**Flatmap a stream of streams :**
+```scala
+println(
+  stream
+    .skip(1)
+    .flatMap(n => once("A" * n))
+    .take(5)
+    .toList
+)
+```
+```text
+List(A, AA, AAA, AAAA, AAAAA)
+```
+
+**More examples :**
+
+Open this repository on any editor supporting scala (VS Code/Metal, Intellij Idea, GitPod, ...).
+
+Then run the `App.scala` main class.
