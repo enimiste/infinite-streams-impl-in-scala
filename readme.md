@@ -12,7 +12,7 @@ object XStreams {
   /**
    * Returns an empty stream
    *
-   * @tparam T
+   * @param T
    * @return
    */
   def empty[T]: XFiniteStream[T]
