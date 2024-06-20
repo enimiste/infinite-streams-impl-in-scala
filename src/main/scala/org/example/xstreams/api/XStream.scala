@@ -52,11 +52,11 @@ trait XStream[T] extends IterableOnce[T] {
 
   /** Returns a new stream that merges all the sub stream into one
     *
-    * @param asIterableOne
+    * @param asIterableOnce
     * @tparam B
     * @return
     */
-  def flatten[B](implicit asIterableOne: T => IterableOnce[B]): XStream[B]
+  def flatten[B](implicit asIterableOnce: T => IterableOnce[B]): XStream[B]
 
   /** Returns a new stream that merges all the sub stream into one, after
     * applying the mapping function to each one of the elements

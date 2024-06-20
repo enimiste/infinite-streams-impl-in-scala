@@ -28,10 +28,10 @@ private class NoEmptyXStream[T](elem: => T, next: => XStream[T])
     new NoEmptyXStream[T](elem, tail.concat(other))
 
   override def flatten[B](implicit
-      asIterableOne: T => IterableOnce[B]
+                          asIterableOnce: T => IterableOnce[B]
   ): XStream[B] =
-    fromIterator(asIterableOne(head).iterator)
-      .concat(next.flatten(asIterableOne))
+    fromIterator(asIterableOnce(head).iterator)
+      .concat(next.flatten(asIterableOnce))
 
   override def skip(nbr: Int): XStream[T] =
     if nbr == 0 then this

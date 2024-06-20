@@ -34,6 +34,6 @@ private class EmptyXStream[T] extends FiniteXStream[T] {
   override def reversed: FiniteXStream[T] = this
 
   override def flatten[B](implicit
-      asIterableOne: T => IterableOnce[B]
+                          asIterableOnce: T => IterableOnce[B]
   ): XStream[B] = new EmptyXStream
 }
